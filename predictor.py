@@ -60,3 +60,27 @@ mapping = MissingDict(**map_values)
 combined["new_team"] = combined["team"].map(mapping)
 merged = combined.merge(combined, left_on=["date", "new_team"], right_on=["date", "opponent"])
 merged[(merged["predicted_x"] == 1) & (merged["predicted_y"] ==0)]["actual_x"].value_counts()
+
+def predict_winner(team1, team2):
+    # Get the last match for each team
+    team1_data = matches_rolling[matches_rolling['team'] == team1].iloc[-1]
+    team2_data = matches_rolling[matches_rolling['team'] == team2].iloc[-1]
+
+    # Prepare the data for prediction
+    team1_data = team1_data[predictors + new_cols].values.reshape(1, -1)
+    team2_data = team2_data[predictors + new_cols].values.reshape(1, -1)
+
+    # Make predictions
+    team1_pred = rf.predict(team1_data)
+    team2_pred = rf.predict(team2_data)
+
+    # Return the predicted winner
+    if team1_pred > team2_pred:
+        return team1
+    elif team1_pred < team2_pred:
+        return team2
+    else:
+        return 'Draw'
+
+#  should output 'Liverpool'
+# print(predict_winner('Manchester United', 'Liverpool'))
